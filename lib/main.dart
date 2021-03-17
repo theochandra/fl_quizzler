@@ -1,4 +1,9 @@
+import 'package:fl_quizzler/question.dart';
+import 'package:fl_quizzler/quiz_brain.dart';
 import 'package:flutter/material.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
+
+QuizBrain quizBrain = new QuizBrain();
 
 void main() {
   runApp(Quizzler());
@@ -28,16 +33,41 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
 
-  List<Icon> scoresKeeper = [
-    Icon(
-      Icons.check,
-      color: Colors.green,
-    ),
-    Icon(
-      Icons.close,
-      color: Colors.red,
-    ),
-  ];
+  List<Icon> scoresKeeper = [];
+
+  void checkAnswer(bool userPickedAnswer) {
+    bool correctAnswer = quizBrain.getCorrectAnswer();
+
+    setState(() {
+      if (quizBrain.isFinished() == true) {
+        Alert(
+          context: context,
+          title: 'Finished',
+          desc: 'You\'ve reached the end of the quiz.',
+        ).show();
+
+        quizBrain.reset();
+        scoresKeeper = [];
+      } else {
+        if (correctAnswer == userPickedAnswer) {
+          scoresKeeper.add(
+            Icon(
+              Icons.check,
+              color: Colors.green,
+            ),
+          );
+        } else {
+          scoresKeeper.add(
+            Icon(
+              Icons.close,
+              color: Colors.red,
+            ),
+          );
+        }
+        quizBrain.nextQuestion();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +81,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: EdgeInsets.all(10),
             child: Center(
               child: Text(
-                'This is where the question text will go',
+                quizBrain.getQuestionText(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 25,
@@ -64,8 +94,10 @@ class _QuizPageState extends State<QuizPage> {
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(15),
-            child: FlatButton(
-              color: Colors.green,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.green,
+              ),
               child: Text(
                 'True',
                 style: TextStyle(
@@ -75,14 +107,7 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 // The user picked true
-                setState(() {
-                  scoresKeeper.add(
-                    Icon(
-                      Icons.check,
-                      color: Colors.green,
-                    ),
-                  );
-                });
+                checkAnswer(true);
               },
             ),
           ),
@@ -90,8 +115,10 @@ class _QuizPageState extends State<QuizPage> {
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(15),
-            child: FlatButton(
-              color: Colors.red,
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
               child: Text(
                 'False',
                 style: TextStyle(
@@ -101,6 +128,7 @@ class _QuizPageState extends State<QuizPage> {
               ),
               onPressed: () {
                 // The user picked false
+                checkAnswer(false);
               },
             ),
           ),
@@ -112,19 +140,3 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 }
-
-/*
-Question('Some cats are actually allergic to humans', true),
-Question('You can lead a cow down stairs but not up stairs.', false),
-Question('Approximately one quarter of human bones are in the feet.', true),
-Question('A slug\'s blood is green.', true),
-Question('Buzz Aldrin\'s mother\'s maiden name was \"Moon\".', true),
-Question('It is illegal to pee in the Ocean in Portugal.', true),
-Question('No piece of square dry paper can be folded in half more than 7 times.', false),
-Question('In London, UK, if you happen to die in the House of Parliament, you are technically entitled to a state funeral, because the building is considered too sacred a place.', true),
-Question('The loudest sound produced by any animal is 188 decibels. That animal is the African Elephant.', false),
-Question('The total surface area of two human lungs is approximately 70 square metres.', true),
-Question('Google was originally called \"Backrub\".', true),
-Question('Chocolate affects a dog\'s heart and nervous system; a few ounces are enough to kill a small dog.', true),
-Question('In West Virginia, USA, if you accidentally hit an animal with your car, you are free to take it home to eat.', true),
- */
